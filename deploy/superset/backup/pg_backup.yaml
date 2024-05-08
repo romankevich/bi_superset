@@ -1,0 +1,23 @@
+version: '2'
+services:
+    pgbackups:
+        image: prodrigestivill/postgres-backup-local
+        container_name: pg_backup
+        restart: unless-stopped
+        volumes:
+            - /opt/pgbackups:/backups
+        environment:
+            - POSTGRES_HOST=localhost
+            - POSTGRES_DB=superset
+            - POSTGRES_USER=superset
+            - POSTGRES_PASSWORD=superset
+            - POSTGRES_EXTRA_OPTS=-Z1 --schema=public --blobs
+            - TZ="Europe/Moscow"
+            - SCHEDULE=@daily
+            - BACKUP_KEEP_DAYS=7
+            - BACKUP_KEEP_WEEKS=4
+            - BACKUP_KEEP_MONTHS=6
+            - HEALTHCHECK_PORT=8080
+volumes:
+  pgbackups:
+    external: true
