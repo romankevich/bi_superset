@@ -93,6 +93,25 @@ services:
     volumes: *superset-volumes
     healthcheck:
       disable: true
+  
+  backup:
+      image: postgres:15
+      restart: unless-stopped
+      depends_on:
+        - db
+      volumes:
+        - /opt/bi/deploy/superset/backup:/backup
+      command: >
+        bash -c "while true; do
+          PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h db-postgresql -U $$POSTGRES_USER -Fc $$POSTGRES_DB > /backup/$$(date +%Y-%m-%d-%H-%M-%S).dump
+          echo ""Backup done at $$(date +%Y-%m-%d_%H:%M:%S)""
+          ls -1 /backup/*.dump | head -n -7 | xargs rm -f
+          sleep 86400
+        done"
+      environment:
+        POSTGRES_USER: superset
+        POSTGRES_PASSWORD: superset
+        POSTGRES_DB: superset 
 
 volumes:
   superset_home:
@@ -100,4 +119,6 @@ volumes:
   db_home:
     external: false
   redis:
+    external: false
+  backup:
     external: false
